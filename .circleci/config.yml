@@ -17,3 +17,33 @@ jobs:
       - run:
           name: Install Lambda function prerequisites
           command: sudo pip install -r scripts/requirements.txt
+      - run:
+          name: Zip Artifact
+          command: |
+            echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
+            pwd
+            echo "Listing current directory content"
+            ls -al
+            echo "Making the lambda_artifact directory"
+            mkdir -p lambda_artifact
+            echo "Changing directory to lambda_artifact"
+            cd lambda_artifact
+            echo "Copying all scripts from ../scripts directory to the lambda_artifact"
+            cp ../scripts/*.* .
+            echo "Zipping all files in the lambda_artifact directory"
+            zip -r cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip .
+            echo "Removing the files except for the zip file from the lambda_artifact directory"
+            rm *.txt *.py
+            ls -al
+            pwd
+            echo "Changing directory to root"
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Invoke lambda function
+          command: |
+            echo "Getting aws account id"
+            accountId=$(aws sts get-caller-identity | jq '.Account' | tr -d '"')
+            echo "Creating lambda function"
+            aws lambda create-function --function-name password_reset --zip-file fileb://lambda_artifact/cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip --handler password_reset.password_reset --runtime python3.7 --role arn:aws:iam::${accountId}:role/lambda-cli-role
