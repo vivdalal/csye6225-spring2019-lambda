@@ -40,7 +40,7 @@ jobs:
             cd ..
             pwd
             ls -al
-            echo ${AWS::AccountId}
       - run:
           name: Invoke lambda function
-          command: aws lambda create-function --function-name password_reset \ --zip-file fileb://lambda_artifact/cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip \ --handler password_reset.password_reset \ --runtime python3.7 \ --role arn:aws:iam::${AWS::AccountId}:role/lambda-cli-role
+          command: aws lambda create-function --function-name password_reset --zip-file fileb://lambda_artifact/cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip \
+--handler password_reset.password_reset --runtime python3.7 --role arn:aws:iam::${AWS::AccountId}:role/lambda-cli-role
