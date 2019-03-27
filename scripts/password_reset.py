@@ -1,7 +1,9 @@
 import json
 import os
 import boto3
-
+import uuid
+from boto3.dynamodb.conditions import Key, Attr
+from datetime import datetime
 from botocore.exceptions import ClientError
 
 
@@ -19,7 +21,26 @@ def password_reset(event, context):
     recipient = reset_req["email"]
 
     #Check the emailId in DynamoDB
-
+    dynamodb = boto3.resource('dynamodb',region_name=os.environ.get("AWS_REGION"))
+    table = dynamodb.Table('TblPasswordReset')
+    uuid = uuid.uuid4()
+    id = str(uuid)
+    res = table.query(
+        IndexName='email-index',
+        KeyConditionExpression=Key('email').eq(recipient)
+    )
+    items = res['Items']
+    if items:
+        dt = datetime.strptime(items[0]['timeOfRequest'],'%Y-%m-%d %H:%M:%S')
+        currentTime = datetime.now()
+        if ((currentTime - dt).total_seconds()/60) <= 20:
+            response = table.put_item(
+                Item={
+                    'token': id,
+                    'email': recipient,
+                    'timeOfRequest' : datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+            )
     #Insert record in DynamoDB if it does not exist. Check the TTL of the existing record.
     #Should be less than 20 minutes for it to be considered valid
 
