@@ -46,4 +46,4 @@ jobs:
             echo "Getting aws account id"
             accountId=$(aws sts get-caller-identity | jq '.Account' | tr -d '"')
             echo "Creating lambda function"
-            aws lambda create-function --function-name password_reset --zip-file fileb://lambda_artifact/cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip --handler password_reset.password_reset --runtime python3.7 --role arn:aws:iam::${accountId}:role/lambda-cli-role
+            aws lambda create-function --function-name password_reset --zip-file fileb://lambda_artifact/cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip --handler password_reset.password_reset --runtime python3.7 --role arn:aws:iam::${accountId}:role/LambdaCLIRole
