@@ -31,7 +31,7 @@ jobs:
             echo "Copying all scripts from ../scripts directory to the lambda_artifact"
             cp ../scripts/*.* .
             echo "Zipping all files in the lambda_artifact directory"
-            zip -r cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip .
+            zip -r cloud-ninja-lambda.zip .
             echo "Removing the files except for the zip file from the lambda_artifact directory"
             rm *.txt *.py
             ls -al
@@ -41,9 +41,11 @@ jobs:
             pwd
             ls -al
       - run:
-          name: Invoke lambda function
+          name: Upload Artifact to S3
           command: |
-            echo "Getting aws account id"
-            accountId=$(aws sts get-caller-identity | jq '.Account' | tr -d '"')
-            echo "Creating lambda function"
-            aws lambda create-function --function-name password_reset --zip-file fileb://lambda_artifact/cloud-ninja-lambda-${CIRCLE_BUILD_NUM}.zip --handler password_reset.password_reset --runtime python3.7 --role arn:aws:iam::${accountId}:role/LambdaCLIRole
+            echo "Uploading Artifact to S3 bucket ${CODE_DEPLOY_S3_BUCKET}"
+            pwd
+            cd lambda_artifact
+            ls -al
+            aws s3 cp cloud-ninja-lambda.zip s3://${CODE_DEPLOY_S3_BUCKET}
+            cd ..
