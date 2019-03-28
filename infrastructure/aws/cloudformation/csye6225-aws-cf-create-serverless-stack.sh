@@ -47,9 +47,12 @@ fi
 echo "Selected bucket : $s3BucketName"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
+domain=$(aws route53 list-hosted-zones --query 'HostedZones[0].{Name:Name}' --output text)
+domain=${domain: 0:-1}
+
 ##Creating Stack
 #echo "Creating Cloud Stack $1"
-response=$(aws cloudformation create-stack --stack-name "$1" --template-body file://csye6225-aws-cf-serverless.json --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey="S3BUCKETLAMBDA",ParameterValue=$s3BucketName)
+response=$(aws cloudformation create-stack --stack-name "$1" --template-body file://csye6225-aws-cf-serverless.json --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey="S3BUCKETLAMBDA",ParameterValue=$s3BucketName ParameterKey="DOMAINIDNAME",ParameterValue=$domain)
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Waiting for Stack $1 to be created"
 echo "$response"

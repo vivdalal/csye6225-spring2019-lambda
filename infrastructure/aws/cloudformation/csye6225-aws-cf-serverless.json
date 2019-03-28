@@ -4,6 +4,10 @@
       "S3BUCKETLAMBDA":{
          "Description":"S3 bucket for lambda artifact",
          "Type":"String"
+      },
+      "DOMAINIDNAME":{
+         "Description":"S3 bucket for lambda artifact",
+         "Type":"String"
       }
    },
    "Resources":{
@@ -76,7 +80,13 @@
                "S3Key":"cloud-ninja-lambda.zip"
             },
             "Runtime":"python3.7",
-            "FunctionName":"password_reset"
+            "FunctionName":"password_reset",
+            "Environment":{
+               "DOMAIN_NAME":{
+                  "Ref":"DOMAINIDNAME"
+               },
+               "DYNAMO_TABLE":"csye6225"
+            }
          }
       },
       "LambdaResourcePolicy":{
