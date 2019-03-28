@@ -49,7 +49,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 ##Creating Stack
 #echo "Creating Cloud Stack $1"
-response=$(aws cloudformation create-stack --stack-name "$1" --template-body file://csye6225-aws-cf-serverless.json --parameters ParameterKey="S3BUCKETLAMBDA",ParameterValue=$s3BucketName)
+response=$(aws cloudformation create-stack --stack-name "$1" --template-body file://csye6225-aws-cf-serverless.json --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey="S3BUCKETLAMBDA",ParameterValue=$s3BucketName)
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Waiting for Stack $1 to be created"
 echo "$response"
