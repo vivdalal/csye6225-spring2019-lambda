@@ -25,7 +25,7 @@
             "RoleName":"LambdaExecutionRole"
          }
       },
-      "MyLambdaFunction":{
+      "PasswordResetLambdaFunction":{
          "Type":"AWS::Lambda::Function",
          "Properties":{
             "Handler":"password_reset.password_reset",
@@ -43,6 +43,36 @@
             },
             "Runtime":"python3.7",
             "FunctionName":"password_reset"
+         }
+      },
+      "LambdaResourcePolicy":{
+         "Type":"AWS::Lambda::Permission",
+         "Properties":{
+            "FunctionName":{
+               "Ref":"PasswordResetLambdaFunction"
+            },
+            "Principal":"sns.amazonaws.com",
+            "Action":"lambda:InvokeFunction",
+            "SourceArn":{
+               "Fn::ImportValue":"PasswordResetTopicARN"
+            }
+         }
+      },
+      "LambdaSNSSubscription":{
+         "Type":"AWS::SNS::Subscription",
+         "DependsOn": [
+             "PasswordResetLambdaFunction"
+         ],
+         "Properties":{
+            "Endpoint":{
+               "Fn::GetAtt": [
+                  "PasswordResetLambdaFunction","Arn"
+               ]
+            },
+            "Protocol":"lambda",
+            "TopicArn":{
+               "Fn::ImportValue":"PasswordResetTopicARN"
+            }
          }
       }
    }
