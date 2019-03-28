@@ -1,5 +1,8 @@
 # CSYE 6225 - Spring 2019 Lambda
 
+Lambda Application for password reset
+Added Authentication and Access Control for AWS Lambda to your CI/CD stack
+
 ## Team Information
 
 | Name | NEU ID | Email Address |
