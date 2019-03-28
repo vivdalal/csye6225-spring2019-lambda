@@ -19,6 +19,40 @@
                         "Service":"lambda.amazonaws.com"
                      },
                      "Action":"sts:AssumeRole"
+                  },
+                  {
+                     "Effect":"Allow",
+                     "Action":[
+                        "dynamodb:BatchGetItem",
+                        "dynamodb:GetItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan",
+                        "dynamodb:BatchWriteItem",
+                        "dynamodb:PutItem",
+                        "dynamodb:UpdateItem"
+                     ],
+                     "Resource":{
+                        "Fn::ImportValue":"DynamoDBTableARN"
+                     }
+                  },
+                  {
+                     "Effect":"Allow",
+                     "Action":[
+                        "logs:CreateLogStream",
+                        "logs:CreateLogGroup",
+                        "logs:PutLogEvents",
+                        "ses:SendEmail",
+                        "ses:SendRawEmail"
+                     ],
+                     "Resource":"arn:aws:logs:${AWS::Region}:${AWS:AccountId}:*"
+                  },
+                  {
+                     "Effect":"Allow",
+                     "Action":[
+                        "ses:SendEmail",
+                        "ses:SendRawEmail"
+                     ],
+                     "Resource":"*"
                   }
                ]
             },
@@ -60,13 +94,14 @@
       },
       "LambdaSNSSubscription":{
          "Type":"AWS::SNS::Subscription",
-         "DependsOn": [
-             "PasswordResetLambdaFunction"
+         "DependsOn":[
+            "PasswordResetLambdaFunction"
          ],
          "Properties":{
             "Endpoint":{
-               "Fn::GetAtt": [
-                  "PasswordResetLambdaFunction","Arn"
+               "Fn::GetAtt":[
+                  "PasswordResetLambdaFunction",
+                  "Arn"
                ]
             },
             "Protocol":"lambda",
