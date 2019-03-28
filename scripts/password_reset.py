@@ -10,16 +10,16 @@ import time
 
 def password_reset(event, context):
 
-    sender_id_domain = os.environ.get("sender_id_domain")
+    sender_id_domain = os.environ.get("DOMAIN_NAME")
 
     message = event['Records'][0]['Sns']['Message']
     print(message)
     reset_req = json.loads(message)
-    print(reset_req["email"])
+    print(reset_req["emailId"])
 
     # Replace recipient@example.com with a "To" address. If your account
     # is still in the sandbox, this address must be verified.
-    recipient = reset_req["email"]
+    recipient = reset_req["emailId"]
 
     #Check the emailId in DynamoDB
     #Insert record in DynamoDB if it does not exist. Check the TTL of the existing record.
@@ -29,11 +29,14 @@ def password_reset(event, context):
     token = insert_to_dynamodb(recipient)
 
     #Preparing and Sending
-    prepare_and_send_email(recipient, token, sender_id_domain)
-
+    if token:
+        prepare_and_send_email(recipient, token, sender_id_domain)
+    else:
+        print('no email sent')
 def insert_to_dynamodb(recipient):
+    dynamo_table = os.environ.get("DYNAMO_TABLE")
     dynamodb = boto3.resource('dynamodb',region_name=os.environ.get("AWS_REGION"))
-    table = dynamodb.Table('csye6225')
+    table = dynamodb.Table(dynamo_table)
     ud = uuid.uuid4()
     id = str(ud)
     dynamo_row = table.query(
