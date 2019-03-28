@@ -59,7 +59,7 @@ def insert_to_dynamodb(recipient):
         dt = float(items[0]['CreationTime'])
         currentTime = float(time.time())
         time_diff_minutes = (currentTime - dt)/60
-        if time_diff_minutes<=1.0:
+        if time_diff_minutes<=20.0:
             print("Requested token within TTL")
         else:
             uid = uuid.uuid4()
