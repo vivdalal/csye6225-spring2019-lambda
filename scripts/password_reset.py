@@ -68,9 +68,11 @@ def insert_to_dynamodb(recipient):
             Key={
                 'Email' : recipient
             },
-            UpdateExpression="set UniqueToken = :t",
+            UpdateExpression="set UniqueToken = :t, CreationTime = :c, ExpirationTime = :e",
             ExpressionAttributeValues={
-            ':t': id
+            ':t': id,
+            ':c': str(time.time()),
+            ':e': str(time.time() + 1200)
         },
             ReturnValues="UPDATED_NEW"
         )
