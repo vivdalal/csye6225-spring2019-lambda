@@ -14,11 +14,11 @@ def password_reset(event, context):
     message = event['Records'][0]['Sns']['Message']
     print(message)
     reset_req = json.loads(message)
-    print(reset_req["email"])
+    print(reset_req["emailId"])
 
     # Replace recipient@example.com with a "To" address. If your account
     # is still in the sandbox, this address must be verified.
-    recipient = reset_req["email"]
+    recipient = reset_req["emailId"]
 
     #Check the emailId in DynamoDB
     dynamodb = boto3.resource('dynamodb',region_name=os.environ.get("AWS_REGION"))
