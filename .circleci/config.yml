@@ -1,0 +1,61 @@
+version: 2
+jobs:
+  build:
+    branches:
+      only:
+        - master #Only building for master branch pushes
+    docker:
+      - image: circleci/python:3.7.2
+    steps:
+      - checkout
+      - run:
+          name: Install packages
+          command: sudo apt-get update && sudo apt-get install wget zip unzip -y
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Install Lambda function prerequisites
+          command: sudo pip install -r scripts/requirements.txt
+      - run:
+          name: Zip Artifact
+          command: |
+            echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
+            pwd
+            echo "Listing current directory content"
+            ls -al
+            echo "Making the lambda_artifact directory"
+            mkdir -p lambda_artifact
+            echo "Changing directory to lambda_artifact"
+            cd lambda_artifact
+            echo "Copying all scripts from ../scripts directory to the lambda_artifact"
+            cp ../scripts/*.* .
+            echo "Zipping all files in the lambda_artifact directory"
+            zip -r cloud-ninja-lambda.zip .
+            echo "Removing the files except for the zip file from the lambda_artifact directory"
+            rm *.txt *.py
+            ls -al
+            pwd
+            echo "Changing directory to root"
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Upload Artifact to S3
+          command: |
+            echo "Uploading Artifact to S3 bucket ${CODE_DEPLOY_S3_BUCKET}"
+            pwd
+            cd lambda_artifact
+            ls -al
+            aws s3 cp cloud-ninja-lambda.zip s3://${CODE_DEPLOY_S3_BUCKET}
+            cd ..
+      - run:
+          name: Update lambda function
+          command: |
+            allfunctions=$(aws lambda list-functions --query 'Functions[?Version == `$LATEST`].{FunctionName:FunctionName}')
+            if [  `echo $allfunctions | grep -w -c "$FUNCTION_NAME" ` -gt 0 ]
+            then
+              echo "Function $FUNCTION_NAME already exists. Updating it."
+              aws lambda update-function-code --function-name ${FUNCTION_NAME} --s3-bucket ${CODE_DEPLOY_S3_BUCKET} --s3-key cloud-ninja-lambda.zip
+              echo "Function updated successfully."
+            fi
