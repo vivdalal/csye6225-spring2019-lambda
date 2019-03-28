@@ -5,6 +5,7 @@ import uuid
 from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime
 from botocore.exceptions import ClientError
+import time
 
 
 def password_reset(event, context):
@@ -14,41 +15,63 @@ def password_reset(event, context):
     message = event['Records'][0]['Sns']['Message']
     print(message)
     reset_req = json.loads(message)
-    print(reset_req["emailId"])
+    print(reset_req["email"])
 
     # Replace recipient@example.com with a "To" address. If your account
     # is still in the sandbox, this address must be verified.
-    recipient = reset_req["emailId"]
+    recipient = reset_req["email"]
 
     #Check the emailId in DynamoDB
-    dynamodb = boto3.resource('dynamodb',region_name=os.environ.get("AWS_REGION"))
-    table = dynamodb.Table('TblPasswordReset')
-    uuid = uuid.uuid4()
-    id = str(uuid)
-    res = table.query(
-        IndexName='email-index',
-        KeyConditionExpression=Key('email').eq(recipient)
-    )
-    items = res['Items']
-    if items:
-        dt = datetime.strptime(items[0]['timeOfRequest'],'%Y-%m-%d %H:%M:%S')
-        currentTime = datetime.now()
-        if ((currentTime - dt).total_seconds()/60) <= 20:
-            response = table.put_item(
-                Item={
-                    'token': id,
-                    'email': recipient,
-                    'timeOfRequest' : datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                }
-            )
     #Insert record in DynamoDB if it does not exist. Check the TTL of the existing record.
     #Should be less than 20 minutes for it to be considered valid
 
     # The token returned from DynamoDB
-    token = "sample"
+    token = insert_to_dynamodb(recipient)
 
     #Preparing and Sending
     prepare_and_send_email(recipient, token, sender_id_domain)
+
+def insert_to_dynamodb(recipient):
+    dynamodb = boto3.resource('dynamodb',region_name=os.environ.get("AWS_REGION"))
+    table = dynamodb.Table('csye6225')
+    ud = uuid.uuid4()
+    id = str(ud)
+    dynamo_row = table.query(
+        KeyConditionExpression=Key('Email').eq(recipient)
+    )
+    items = dynamo_row['Items']
+
+    if not items:
+        response = table.put_item(
+        Item={
+            'UniqueToken': id,
+            'Email': recipient,
+            'CreationTime' : str(time.time()),
+            'ExpirationTime' : str(time.time() + 1200)
+            }
+        )
+        print("New record inserted successfully")
+        return id
+    elif items:
+        dt = float(items[0]['CreationTime'])
+        currentTime = float(time.time())
+        time_diff_minutes = (currentTime - dt)/60
+        if time_diff_minutes<=20.0:
+            print("Requested token within TTL")
+        else:
+            uid = uuid.uuid4()
+            id = str(uid)
+            table.update_item(
+            Key={
+                'Email' : recipient
+            },
+            UpdateExpression="set UniqueToken = :t",
+            ExpressionAttributeValues={
+            ':t': id
+        },
+            ReturnValues="UPDATED_NEW"
+        )
+            return id
 
 def prepare_and_send_email(recipient, token, sender_id_domain):
     # Sender Email ID. Dummy email which will be used to send emails.
