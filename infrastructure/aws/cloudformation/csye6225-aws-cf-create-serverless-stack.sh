@@ -35,7 +35,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 #Listing the buckets in the AWS account and allowing the user to pick the codeDeploy bucket
 echo "Displaying all buckets in the AWS Account"
 aws s3 ls --human-readable
-echo "Select the S3 bucket to store lambda artifacts via CircleCI"
+echo "Select the S3 bucket to get lambda artifacts via CircleCI"
 read s3BucketName
 
 if [ -z s3BucketName ]
