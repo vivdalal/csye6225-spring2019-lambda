@@ -23,7 +23,19 @@
                         "Service":"lambda.amazonaws.com"
                      },
                      "Action":"sts:AssumeRole"
-                  },
+                  }
+               ]
+            },
+            "RoleName":"LambdaExecutionRole"
+         }
+      },
+      "LambdaDynamoDBPolicy":{
+         "Type":"AWS::IAM::Policy",
+         "Properties":{
+            "PolicyName":"LambdaDynamoDBPolicy",
+            "PolicyDocument":{
+               "Version":"2012-10-17",
+               "Statement":[
                   {
                      "Effect":"Allow",
                      "Action":[
@@ -38,18 +50,48 @@
                      "Resource":{
                         "Fn::ImportValue":"DynamoDBTableARN"
                      }
-                  },
+                  }
+               ]
+            },
+            "Roles":[
+               {
+                  "Ref":"LambdaExecutionRole"
+               }
+            ]
+         }
+      },
+      "LambdaLogsPolicy":{
+         "Type":"AWS::IAM::Policy",
+         "Properties":{
+            "PolicyName":"LambdaLogsPolicy",
+            "PolicyDocument":{
+               "Version":"2012-10-17",
+               "Statement":[
                   {
                      "Effect":"Allow",
                      "Action":[
                         "logs:CreateLogStream",
                         "logs:CreateLogGroup",
-                        "logs:PutLogEvents",
-                        "ses:SendEmail",
-                        "ses:SendRawEmail"
+                        "logs:PutLogEvents"
                      ],
                      "Resource":"arn:aws:logs:${AWS::Region}:${AWS:AccountId}:*"
-                  },
+                  }
+               ]
+            },
+            "Roles":[
+               {
+                  "Ref":"LambdaExecutionRole"
+               }
+            ]
+         }
+      },
+      "LambdaSESPolicy":{
+         "Type":"AWS::IAM::Policy",
+         "Properties":{
+            "PolicyName":"LambdaSESPolicy",
+            "PolicyDocument":{
+               "Version":"2012-10-17",
+               "Statement":[
                   {
                      "Effect":"Allow",
                      "Action":[
@@ -60,7 +102,11 @@
                   }
                ]
             },
-            "RoleName":"LambdaExecutionRole"
+            "Roles":[
+               {
+                  "Ref":"LambdaExecutionRole"
+               }
+            ]
          }
       },
       "PasswordResetLambdaFunction":{
@@ -82,10 +128,12 @@
             "Runtime":"python3.7",
             "FunctionName":"password_reset",
             "Environment":{
-               "DOMAIN_NAME":{
-                  "Ref":"DOMAINIDNAME"
-               },
-               "DYNAMO_TABLE":"csye6225"
+               "Variables":{
+                  "DOMAIN_NAME":{
+                     "Ref":"DOMAINIDNAME"
+                  },
+                  "DYNAMO_TABLE":"csye6225"
+               }
             }
          }
       },
