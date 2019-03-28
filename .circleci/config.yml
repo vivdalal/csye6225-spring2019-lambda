@@ -52,6 +52,10 @@ jobs:
       - run:
           name: Update lambda function
           command: |
-            echo "Updating lambda function"
-            aws lambda update-function-code --function-name password_reset --s3-bucket ${CODE_DEPLOY_S3_BUCKET} --s3-key cloud-ninja-lambda.zip
-            echo "Updated lambda function"
+            allfunctions=$(aws lambda list-functions --query 'Functions[?Version == `$LATEST`].{FunctionName:FunctionName}')
+            if [  `echo $allfunctions | grep -w -c "$FUNCTION_NAME" ` -gt 0 ]
+            then
+              echo "Function $FUNCTION_NAME already exists. Updating it."
+              aws lambda update-function-code --function-name ${FUNCTION_NAME} --s3-bucket ${CODE_DEPLOY_S3_BUCKET} --s3-key cloud-ninja-lambda.zip
+              echo "Function updated successfully."
+            fi
