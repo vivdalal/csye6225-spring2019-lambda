@@ -49,3 +49,9 @@ jobs:
             ls -al
             aws s3 cp cloud-ninja-lambda.zip s3://${CODE_DEPLOY_S3_BUCKET}
             cd ..
+      - run:
+          name: Update lambda function
+          command: |
+            echo "Updating lambda function"
+            aws lambda update-function-code --function-name password_reset --s3-bucket ${CODE_DEPLOY_S3_BUCKET} --s3-key cloud-ninja-lambda.zip
+            echo "Updated lambda function"
