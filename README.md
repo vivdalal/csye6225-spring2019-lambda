@@ -13,7 +13,8 @@ Added Authentication and Access Control for AWS Lambda to your CI/CD stack
 |Karan Barai|001832013|barai.k@husky.neu.edu|
 
 ## Technology Stack
-*
+* AWS Lambda
+* Python
 
 
 ## Build Instructions
